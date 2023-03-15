@@ -5,6 +5,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hmdp.dto.LoginFormDTO;
@@ -15,6 +16,7 @@ import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -97,6 +99,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Map<String, Object> userMap = BeanUtil.beanToMap(userDTO,new HashMap<>(), CopyOptions.create()
                 .setIgnoreNullValue(true)
                 .setFieldValueEditor((fieldName,fieldValue) -> fieldValue.toString()));
+        /**
+         * todo 对象转成JSON存入REdis
+         */
+        //String jsonUserDTO = JSONUtil.toJsonStr(userDTO);
+        //stringRedisTemplate.opsForValue().set(LOGIN_USER_KEY+token,jsonUserDTO);
         //存储
         String tokenKey =LOGIN_USER_KEY+token;
         stringRedisTemplate.opsForHash().putAll(tokenKey,userMap);
