@@ -130,12 +130,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             //缓存击穿2：获取互斥锁
             Boolean isLock = tryLock(lockKey);
             //缓存击穿3：判断是否获取成功
-            //失败：休眠并重试
+            //缓存击穿3：判断是否获取成功-失败：休眠并重试
             if(!isLock){
                 Thread.sleep(50);
                 queryWithMutex(id);//递归
             }
-            //成功：写入Redis
+            //缓存击穿3：判断是否获取成功-成功：写入Redis
             //4.不存在，更具id查询数据库
             shop = getById(id);
             //模拟重建延迟
