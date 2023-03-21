@@ -9,6 +9,7 @@ import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisWorker;
+import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,22 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if (voucher.getStock()<1){
             return Result.fail("库存不足");
         }
-        return creatVoucherOrder(voucherId);
+        //1.创建锁对象
+        Long userId = UserHolder.getUser().getId();
+        SimpleRedisLock lock = new SimpleRedisLock("order" + userId, stringRedisTemplate);
+        //2.获取锁
+        boolean isLock = lock.tryLock(1200);
+        if (!isLock){
+            //获取失败
+            return Result.fail("一人限购一单");
+
+        }
+        try {
+            return creatVoucherOrder(voucherId);
+        } finally {
+            //释放锁
+            lock.unLock();
+        }
     }
 
     private Result creatVoucherOrder(Long voucherId) {
