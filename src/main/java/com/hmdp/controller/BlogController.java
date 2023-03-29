@@ -32,6 +32,15 @@ public class BlogController {
     @Resource
     private IUserService userService;
 
+
+    @GetMapping("/{id}")
+    public Result queryBlogById(@PathVariable("id")Long id){
+        return blogService.queryBlogById(id);
+    }
+
+
+
+
     @PostMapping
     public Result saveBlog(@RequestBody Blog blog) {
         // 获取登录用户
